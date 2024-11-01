@@ -1,0 +1,47 @@
+name: Test .envrc and Asciinema-Director
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test_envrc:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install direnv
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y direnv
+
+    - name: Allow and activate direnv
+      run: |
+        direnv allow .
+        eval "$(direnv export bash)"
+
+    - name: Install dependencies from requirements.txt
+      run: pip install -r requirements.txt
+
+    - name: Check asciinema-director executable
+      run: |
+        if ! command -v asciinema-director &> /dev/null; then
+          echo "asciinema-director is not installed or not in PATH"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Test asciinema-director
+      run: |
+        asciinema-director --help
+      shell: bash
+
